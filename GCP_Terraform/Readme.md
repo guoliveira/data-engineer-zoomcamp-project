@@ -1,4 +1,4 @@
-## Step for building a Google Cloud Platform Infrastrure
+## Step for building a Google Cloud Platform Infrastruture
 # Advanced steps to configure GCP locally
 
 1. After the creation of the GCP project I went into **IAM & Admin** and built a new service account:
