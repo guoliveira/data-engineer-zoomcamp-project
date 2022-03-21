@@ -1,7 +1,7 @@
 # Weather in Portugal in the last 30 years 😎
-## Data Engineer Zoomcamp Project
+## Data Engineer Zoomcamp Capstone Project
 
-This project was developed under the scope of the [Data Engineer Zoomcamp by DataTalksClub](https://github.com/DataTalksClub/data-engineering-zoomcamp) (the biggest Data community in the internet - [DTC](https://datatalks.club/)).
+This captstone project was developed under the scope of the [Data Engineer Zoomcamp by DataTalksClub](https://github.com/DataTalksClub/data-engineering-zoomcamp) (the biggest Data community in the internet - [DTC](https://datatalks.club/)).
 
 The above zoomcamp had the following main topics/tools:
 - Docker and docker-compose;
@@ -34,4 +34,6 @@ For this project it was decided to use the following tools:
 - BigQuery: for the project Data Warehouse;
 - Spark: for the transformation of raw data in refined data.
 
+
+All the general development steps made in this project are mention [here.](https://github.com/guoliveira/data-engineer-zoomcamp-project/blob/main/development_steps.md)
 
