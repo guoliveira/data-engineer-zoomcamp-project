@@ -30,7 +30,7 @@ For this project it was decided to use the following tools:
 - Docker - to proceed to the containerization of other technologies;
 - Airflow - for the orchestration of the full pipeline;
 - Terraform - As a Infrastructure-as-Code (IaC) tool;
-- Google Cloud Storage (GCS) - for storaging as Data Lake;
+- Google Cloud Storage (GCS) - for storage as Data Lake;
 - BigQuery: for the project Data Warehouse;
 - Spark: for the transformation of raw data in refined data.
 
