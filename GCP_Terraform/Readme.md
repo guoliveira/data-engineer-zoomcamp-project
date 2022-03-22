@@ -21,7 +21,7 @@ https://console.cloud.google.com/apis/library/iamcredentials.googleapis.com
    
 # Creation of a GCP Infrastructure
 
-1. Copy of the Terraform files (`main.tf` and `variables.tf`) for the infrastructure creation 
+1. First it was copy the Terraform files (`main.tf` and `variables.tf`) for the infrastructure creation 
    (For this step it was used the [default files from the Zoomcamp](https://github.com/DataTalksClub/data-engineering-zoomcamp/tree/main/week_1_basics_n_setup/1_terraform_gcp/terraform))
 
 2. At the file `variables.tf` it was changed variable "BQ_DATASET" to have the default value "weather_historical_data";
@@ -40,4 +40,8 @@ terraform plan -var="project=capstone-luis-oliveira"
 terraform apply -var="project=capstone-luis-oliveira"
 ```
 
-It is possible to see in the GCP console that the Infrastructure was correctly created:
+It is possible to see below in the GCP console that the Infrastructure was correctly created:
+![BiG Query](https://user-images.githubusercontent.com/12693788/159502520-c0f3f7a2-a7eb-467e-b594-8b7ddaf8f769.png)
+
+![image](https://user-images.githubusercontent.com/12693788/159502713-8ba0d753-862d-4578-b450-f0f47b413015.png)
+
