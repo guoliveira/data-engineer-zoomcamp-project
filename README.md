@@ -35,5 +35,5 @@ For this project it was decided to use the following tools:
 - Spark: for the transformation of raw data in refined data.
 
 
-All the general development steps made in this project are mention [here.](https://github.com/guoliveira/data-engineer-zoomcamp-project/blob/main/development_steps.md)
+**All the general development steps made in this project are mention [here.](https://github.com/guoliveira/data-engineer-zoomcamp-project/blob/main/development_steps.md)**
 
