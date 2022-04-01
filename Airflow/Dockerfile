@@ -4,16 +4,16 @@ FROM apache/airflow:2.2.3
 
 ENV AIRFLOW_HOME=/opt/airflow
 
+WORKDIR $AIRFLOW_HOME
+
 USER root
-RUN apt-get update -qq && apt-get install vim -qqq
+RUN apt-get update -qq && apt-get install vim -qqq && apt-get install -y python3-pip
 # git gcc g++ -qqq
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
 
 # Ref: https://airflow.apache.org/docs/docker-stack/recipes.html
 
-SHELL ["/bin/bash", "-o", "pipefail", "-e", "-u", "-x", "-c"]
+# SHELL ["/bin/bash", "-o", "pipefail", "-e", "-u", "-x", "-c"]
 
 ARG CLOUD_SDK_VERSION=322.0.0
 ENV GCLOUD_HOME=/home/google-cloud-sdk
@@ -33,7 +33,24 @@ RUN DOWNLOAD_URL="https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/goo
     && rm -rf "${TMP_DIR}" \
     && gcloud --version
 
-WORKDIR $AIRFLOW_HOME
+ENV JAVA_HOME=/home/jdk-11.0.2
+
+ENV PATH="${JAVA_HOME}/bin/:${PATH}"
+
+RUN DOWNLOAD_URL="https://download.java.net/java/GA/jdk11/9/GPL/openjdk-11.0.2_linux-x64_bin.tar.gz" \
+    && TMP_DIR="$(mktemp -d)" \
+    && curl -fL "${DOWNLOAD_URL}" --output "${TMP_DIR}/openjdk-11.0.2_linux-x64_bin.tar.gz" \
+    && mkdir -p "${JAVA_HOME}" \
+    && tar xzf "${TMP_DIR}/openjdk-11.0.2_linux-x64_bin.tar.gz" -C "${JAVA_HOME}" --strip-components=1 \
+    && rm -rf "${TMP_DIR}" \
+    && java --version
+
+
+COPY requirements.txt .
+
+RUN python3 -m pip install --upgrade pip
+
+RUN python3 -m pip install --no-cache-dir -r requirements.txt
 
 COPY scripts scripts
 RUN chmod +x scripts
