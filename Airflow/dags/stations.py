@@ -127,4 +127,4 @@ with DAG(
     )
 
     download_dataset_task >> local_to_raw_gcs >> process_data_stations
-    process_data_stations >> local_to_refined_gcs >> remove_dataset_task
+    process_data_stations >> local_to_refined_gcs >> remove_dataset_task >> trigger_transform_dag
