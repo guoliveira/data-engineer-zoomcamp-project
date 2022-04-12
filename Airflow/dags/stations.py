@@ -1,8 +1,10 @@
 import os
+import pandas as pd
 
 from airflow import DAG
 from airflow.utils.dates import days_ago
 from airflow.operators.bash import BashOperator
+from airflow.operators.dagrun_operator import TriggerDagRunOperator
 from airflow.operators.python import PythonOperator
 
 from google.cloud import storage
@@ -11,6 +13,33 @@ PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
 BUCKET = os.environ.get("GCP_GCS_BUCKET")
 
 path_to_local_home = os.environ.get("AIRFLOW_HOME", "/opt/airflow/")
+
+
+def extract_portuguese_stations(parquet_file):
+    df = pd.DataFrame()
+
+    code = []
+    lat = []
+    long = []
+    with open("ghcnd-stations.txt", "r") as f:
+        for x in f:
+            y = x.split("  ", 6)
+            if y[0] == 'POW00013201':
+                code.append(y[0])
+                lat.append(y[1])
+                long.append(y[2])
+            elif y[0][:2] == 'PO':
+                code.append(y[0])
+                lat.append(y[1])
+                long.append(y[2])
+
+    df['code'] = code
+    df['lat'] = lat
+    df['long'] = long
+
+    print(df.head())
+
+    df.to_parquet(parquet_file)
 
 
 def upload_to_gcs(bucket, object_name, local_file):
@@ -42,7 +71,7 @@ default_args = {
 
 # NOTE: DAG declaration - using a Context Manager (an implicit way)
 with DAG(
-    dag_id="data_ingest_stations",
+    dag_id="stations_ingest_process",
     schedule_interval=None,
     default_args=default_args,
     catchup=True,
@@ -53,13 +82,15 @@ with DAG(
 
     dataset_file = 'ghcnd-stations.txt'
     dataset_url = f"https://noaa-ghcn-pds.s3.amazonaws.com"
+    parquet_dataset = 'rfn_ghcnd_stations.parquet'
+
     download_dataset_task = BashOperator(
         task_id="download_dataset_task",
         bash_command=f"curl -sSLf {dataset_url} > {path_to_local_home}/{dataset_file}"
     )
 
-    local_to_gcs_task = PythonOperator(
-        task_id="local_to_gcs_task",
+    local_to_raw_gcs = PythonOperator(
+        task_id="local_to_raw_gcs",
         python_callable=upload_to_gcs,
         op_kwargs={
             "bucket": BUCKET,
@@ -68,9 +99,32 @@ with DAG(
         },
     )
 
+    process_data_stations = PythonOperator(
+        task_id='process_stations',
+        python_callable = extract_portuguese_stations,
+        op_kwargs={"parquet_file":f"{path_to_local_home}/{parquet_dataset}"}
+    )
+
+    local_to_refined_gcs = PythonOperator(
+        task_id="local_to_refined_gcs",
+        python_callable=upload_to_gcs,
+        op_kwargs={
+            "bucket": BUCKET,
+            "object_name": f"refined/stations/{parquet_dataset}",
+            "local_file": f"{path_to_local_home}/{parquet_dataset}",
+        },
+    )
+
     remove_dataset_task = BashOperator(
         task_id="remove_dataset_task",
         bash_command=f"rm {path_to_local_home}/{dataset_file}"
     )
 
-    download_dataset_task >> local_to_gcs_task >> remove_dataset_task
+    trigger_transform_dag = TriggerDagRunOperator(
+        task_id=f'trigger_next_dag',
+        retries=6,
+        trigger_dag_id="ingest_process_weather_data",
+    )
+
+    download_dataset_task >> local_to_raw_gcs >> process_data_stations
+    process_data_stations >> local_to_refined_gcs >> remove_dataset_task

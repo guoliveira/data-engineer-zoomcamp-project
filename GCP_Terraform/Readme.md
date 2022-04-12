@@ -19,8 +19,9 @@ export GOOGLE_APPLICATION_CREDENTIALS="<path/to/your/service-account-authkeys>.j
 It was added the following roles to the service account: Storage Admin + Storage Object Admin + BigQuery Admin
 
 
-5. The following API were enabled : https://console.cloud.google.com/apis/library/iam.googleapis.com
-https://console.cloud.google.com/apis/library/iamcredentials.googleapis.com
+5. The following API were enabled : 
+   https://console.cloud.google.com/apis/library/iam.googleapis.com
+   https://console.cloud.google.com/apis/library/iamcredentials.googleapis.com
    
 # Creation of a GCP Infrastructure
 
@@ -43,8 +44,5 @@ terraform plan -var="project=capstone-luis-oliveira"
 terraform apply -var="project=capstone-luis-oliveira"
 ```
 
-It is possible to see below in the GCP console that the Infrastructure was correctly created:
-![BiG Query](https://user-images.githubusercontent.com/12693788/159502520-c0f3f7a2-a7eb-467e-b594-8b7ddaf8f769.png)
-
-![image](https://user-images.githubusercontent.com/12693788/159502713-8ba0d753-862d-4578-b450-f0f47b413015.png)
+It is possible to see in the GCP console that the Infrastructure was correctly created.
 

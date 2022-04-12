@@ -42,7 +42,7 @@ default_args = {
 
 # NOTE: DAG declaration - using a Context Manager (an implicit way)
 with DAG(
-    dag_id="data_ingest_stations",
+    dag_id="ingest_process_weather_data",
     schedule_interval=None,
     default_args=default_args,
     catchup=True,
@@ -50,12 +50,6 @@ with DAG(
     tags=['dtc-de'],
     start_date=days_ago(1)
 ) as dag:
-
-    dataset_file = 'ghcnd-stations.txt'
-
-    process_data_stations = PythonOperator(
-        task_id='process_stations'
-    )
 
     process_data_weather = PythonOperator(
         task_id='process_data_weather'
