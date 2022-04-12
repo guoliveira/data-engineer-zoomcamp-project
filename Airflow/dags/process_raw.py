@@ -39,7 +39,8 @@ def process_data_weather_fn(year_to_process):
     """)
 
     pivotDF = portuguese_temperature.groupBy("stations_code", "date").pivot("variable").sum("value")
-    pivotDF.coalesce(1).write.parquet(f'{year_to_process}/', mode='overwrite')
+    pivotDF.coalesce(1).write.parquet(f'data/{year_to_process}/', mode='overwrite')
+    print(pivotDF)
 
 
 def upload_to_gcs(bucket, object_name, local_file):
@@ -84,7 +85,6 @@ with DAG(
 
     start_task = DummyOperator(task_id='start_task', dag=dag)
 
-
     for i in range(2000, 2002):
         dataset_file = f"{i}.csv.gz"
 
@@ -102,20 +102,25 @@ with DAG(
 
         start_task >> download_dataset_task >> process_data_weather
 
+        rename_dataset_parquet = BashOperator(
+            task_id=f"rename_parquet_{i}",
+            bash_command=f"mv data/{i}/*.snappy.parquet data/{i}/pt_avg_temp.snappy.parquet"
+        )
+
         local_to_gcs_task = PythonOperator(
-            task_id=f"local_to_gcs_year_{i}",
+            task_id=f"local_to_refined_gcs_year_{i}",
             python_callable=upload_to_gcs,
             op_kwargs={
                 "bucket": BUCKET,
-                "object_name": f"refined/weather_data/{dataset_file.replace('.csv.gz','.parquet')}",
-                "local_file": f"{path_to_local_home}/{dataset_file.replace('.csv.gz','.parquet')}",
+                "object_name": f"refined/weather_data/{i}/pt_avg_temp.snappy.parquet",
+                "local_file": f"{path_to_local_home}/data/{i}/pt_avg_temp.snappy.parquet",
             },
         )
 
         remove_dataset_task = BashOperator(
             task_id=f"remove_dataset_year_{i}",
-            bash_command=f"rm {path_to_local_home}/{dataset_file} {path_to_local_home}/{dataset_file.replace('.csv.gz','.parquet')} "
+            bash_command=f"rm {path_to_local_home}/{dataset_file}"
         )
 
-        process_data_weather >> local_to_gcs_task >> remove_dataset_task
+        rename_dataset_parquet >> process_data_weather >> local_to_gcs_task >> remove_dataset_task
 

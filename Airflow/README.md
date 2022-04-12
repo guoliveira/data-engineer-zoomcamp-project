@@ -9,12 +9,12 @@
 
  #### Execution
  
-  1. Build the image (only first-time, or when there's any change in the `Dockerfile`, takes ~15 mins for the first-time):
+  1. The image was built but only on the first time (it was necessary to rebuilt in case of changes of DockerFile):
      ```shell
      docker-compose build
      ```
 
- 2. Initialize the Airflow scheduler, DB, and other config
+ 2. I initialized the Airflow scheduler, DB, and other config
     ```shell
     docker-compose up airflow-init
     ```
@@ -24,11 +24,9 @@
     docker-compose up
     ```
 
- 4. In another terminal, run `docker-compose ps` to see which containers are up & running.
+ 4. Login to Airflow web UI on `localhost:8080` with default creds: `airflow/airflow`
 
- 5. Login to Airflow web UI on `localhost:8080` with default creds: `airflow/airflow`
-
- 6. Run your DAG on the Web Console.
+ 5. Run your DAG on the Web Console.
 
  7. On finishing your run or to shut down the container/s:
     ```shell
