@@ -1,7 +1,7 @@
 ## Step for building a Google Cloud Platform Infrastructure
 # Advanced steps to configure GCP
 
-1. After the creation of the GCP project we went into **IAM & Admin** and built a new service account called main-user:
+1. After the creation of the GCP project we went into **IAM & Admin** and built a new service account called **developer** and with a Basic Role of Viewer:
 ![role](https://user-images.githubusercontent.com/12693788/159322475-6297d894-b368-4cb6-8e4c-cb34c1adcf1c.png)
 
 2. At this new service account it was built a KEY in JSON format:
