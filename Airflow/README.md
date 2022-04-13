@@ -23,7 +23,9 @@
 
  4. Login to Airflow web UI on `localhost:8080` with default creds: `airflow/airflow`
 
- 5. Run your DAG on the Web Console.
+![img.png](img.png)
+
+ 5. Run my DAGs on the Web Console.
 
  7. On finishing your run or to shut down the container/s:
     ```shell

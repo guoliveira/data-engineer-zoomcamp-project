@@ -17,12 +17,18 @@ BUCKET = os.environ.get("GCP_GCS_BUCKET")
 path_to_local_home = os.environ.get("AIRFLOW_HOME", "/opt/airflow/")
 
 
-def process_data_weather_fn(year_to_process):
+def process_data_weather_fn(year_to_process, local):
+    print(f'LOG: Getting file from {local}/rfn_ghcnd_stations.parquet')
 
     spark = SparkSession.builder.master("local[*]").appName('test').getOrCreate()
-    df = spark.read.option("header", "false").csv(f'{year_to_process}.csv.gz')
+    df = spark.read.option("header", "false").csv(f'{local}/{year_to_process}.csv.gz')
     df.registerTempTable('weather_data')
-    df_stations = spark.read.option("header", "true").parquet('rfn_ghcnd_stations.parquet')
+
+    df_stations = spark.read.option("header", "true").parquet(f'{local}/rfn_ghcnd_stations.parquet')
+
+    test1 = pd.read_parquet(f'{local}/rfn_ghcnd_stations.parquet')
+    print(test1)
+
     df_stations.registerTempTable('stations')
 
     portuguese_temperature = spark.sql("""
@@ -39,8 +45,9 @@ def process_data_weather_fn(year_to_process):
     """)
 
     pivotDF = portuguese_temperature.groupBy("stations_code", "date").pivot("variable").sum("value")
-    pivotDF.coalesce(1).write.parquet(f'data/{year_to_process}/', mode='overwrite')
-    print(pivotDF)
+    pivotDF.coalesce(1).write.parquet(f'{local}/data/{year_to_process}/', mode='overwrite')
+    test2 = pd.read_parquet(f'{local}/data/{year_to_process}/')
+    print(test2)
 
 
 def upload_to_gcs(bucket, object_name, local_file):
@@ -84,8 +91,12 @@ with DAG(
     baseurl="https://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/"
 
     start_task = DummyOperator(task_id='start_task', dag=dag)
+    remove_parquet = BashOperator(
+        task_id=f"remove_parquet",
+        bash_command=f"rm {path_to_local_home}/*.parquet && ls {path_to_local_home}"
+    )
 
-    for i in range(2000, 2002):
+    for i in range(2000, 2021):
         dataset_file = f"{i}.csv.gz"
 
         download_dataset_task = BashOperator(
@@ -97,14 +108,15 @@ with DAG(
             task_id=f'process_data_weather_{i}',
             python_callable = process_data_weather_fn,
             op_kwargs={
-                "year_to_process": i,}
+                "year_to_process": i,
+                "local": path_to_local_home}
         )
 
         start_task >> download_dataset_task >> process_data_weather
 
         rename_dataset_parquet = BashOperator(
             task_id=f"rename_parquet_{i}",
-            bash_command=f"mv data/{i}/*.snappy.parquet data/{i}/pt_avg_temp.snappy.parquet"
+            bash_command=f"mv {path_to_local_home}/data/{i}/*.snappy.parquet {path_to_local_home}/data/{i}/pt_avg_temp.snappy.parquet"
         )
 
         local_to_gcs_task = PythonOperator(
@@ -112,15 +124,17 @@ with DAG(
             python_callable=upload_to_gcs,
             op_kwargs={
                 "bucket": BUCKET,
-                "object_name": f"refined/weather_data/{i}/pt_avg_temp.snappy.parquet",
+                "object_name": f"refined/weather_data/year={i}/pt_avg_temp.snappy.parquet",
                 "local_file": f"{path_to_local_home}/data/{i}/pt_avg_temp.snappy.parquet",
             },
         )
 
         remove_dataset_task = BashOperator(
             task_id=f"remove_dataset_year_{i}",
-            bash_command=f"rm {path_to_local_home}/{dataset_file}"
+            bash_command=f"rm {path_to_local_home}/{dataset_file} "
         )
 
-        rename_dataset_parquet >> process_data_weather >> local_to_gcs_task >> remove_dataset_task
+        process_data_weather >> rename_dataset_parquet >> local_to_gcs_task >> remove_dataset_task >> remove_parquet
+
+
 

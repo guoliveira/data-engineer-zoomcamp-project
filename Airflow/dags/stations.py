@@ -86,7 +86,7 @@ with DAG(
 
     download_dataset_task = BashOperator(
         task_id="download_dataset_task",
-        bash_command=f"curl -sSLf {dataset_url} > {path_to_local_home}/{dataset_file}"
+        bash_command=f"curl -sSLf {dataset_url}/{dataset_file} > {path_to_local_home}/{dataset_file}"
     )
 
     local_to_raw_gcs = PythonOperator(
@@ -102,7 +102,7 @@ with DAG(
     process_data_stations = PythonOperator(
         task_id='process_stations',
         python_callable = extract_portuguese_stations,
-        op_kwargs={"parquet_file":f"{path_to_local_home}/{parquet_dataset}"}
+                op_kwargs={"parquet_file":f"{path_to_local_home}/{parquet_dataset}"}
     )
 
     local_to_refined_gcs = PythonOperator(
