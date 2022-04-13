@@ -15,7 +15,7 @@ The above zoomcamp had the following main topics/tools:
 
 The zoomcamp is completed with a personal [Project](https://github.com/DataTalksClub/data-engineering-zoomcamp/tree/main/week_7_project) envolving some of those tools/topics.
 
-For my project I decided to analyse the historical weather in Portugal in the last 30 years. More specifically, I decided to analyse average temperature from 1990 till 2020. (It was decided to avoid 2021 due possible mistakes and 2022 since it is incomplete).
+For my project I decided to analyse the historical weather in Portugal in the last 30 years. More specifically, I decided to analyse average temperature from 1990 to 2020. (It was decided to avoid 2021 due possible mistakes and 2022 since it is incomplete).
 **With this project I intend to see if there were any changes in temperature over the last 30 years showing it in a chart.**
 
 In terms of dataset I had many choices but I decided to use the [NOAA dataset](https://registry.opendata.aws/noaa-ghcn/) available in the AWS Open Data.
@@ -34,6 +34,7 @@ For this project it was decided to use the following tools:
 - BigQuery: for the project Data Warehouse;
 - Spark: for the transformation of raw data in refined data.
 
+## It is possible to see the developed data pipeline (high-level ETL/ELT process) of the project at [the following link.](pipeline.md)
 
-**All the general development steps made in this project are mention [here.](https://github.com/guoliveira/data-engineer-zoomcamp-project/blob/main/development_steps.md)**
+##All the general development steps made in this project are mention [here.](https://github.com/guoliveira/data-engineer-zoomcamp-project/blob/main/development_steps.md)
 
