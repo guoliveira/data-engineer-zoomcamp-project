@@ -1,10 +1,7 @@
-### Concepts
- [Airflow Concepts and Architecture](1_concepts.md)
-
-### Official Version
- (For the section on the Custom/Lightweight setup, scroll down)
-
  #### Setup
+ 
+ In order to allow a correct run of the Airflow this setup had to be made:
+ 
   [Airflow Setup with Docker, through official guidelines](MainSETUP.md)
 
  #### Execution
