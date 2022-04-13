@@ -1,17 +1,14 @@
  **Docker Build**:
 
-When you want to run Airflow locally, you might want to use an extended image, 
-    containing some additional dependencies - for example you might add new python packages, 
-    or upgrade airflow providers to a later version.
-    
-   Create a `Dockerfile` pointing to Airflow version you've just downloaded, 
+In order to run Airflow locally (in a container), I used an extended image, 
+    containing some additional dependencies therefore I created a `Dockerfile` pointing to Airflow version you've just downloaded, 
     such as `apache/airflow:2.2.3`, as the base image,
        
    And customize this `Dockerfile` by:
-    1. Added your custom packages to be installed. The one we'll need the most is `gcloud` to connect with the GCS bucket/Data Lake.
-    2. Integrating `requirements.txt` to install libraries via  `pip install`
-    3. Inserting bash commands to set Java env
-    4. Inserting commands to download all the necessary files to run Spark 
+* Added your custom packages to be installed. The one we'll need the most is `gcloud` to connect with the GCS bucket/Data Lake.
+* Integrating `requirements.txt` to install libraries via  `pip install`
+* Inserting bash commands to set Java env
+* Inserting commands to download all the necessary files to run Spark 
    
 4. **Import the official docker-compose setup file** from the latest Airflow version:
    ```shell
