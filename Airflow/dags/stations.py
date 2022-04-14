@@ -6,6 +6,7 @@ from airflow.utils.dates import days_ago
 from airflow.operators.bash import BashOperator
 from airflow.operators.dagrun_operator import TriggerDagRunOperator
 from airflow.operators.python import PythonOperator
+from airflow.providers.google.cloud.operators.bigquery import BigQueryCreateExternalTableOperator
 
 from google.cloud import storage
 
@@ -13,6 +14,7 @@ PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
 BUCKET = os.environ.get("GCP_GCS_BUCKET")
 
 path_to_local_home = os.environ.get("AIRFLOW_HOME", "/opt/airflow/")
+BIGQUERY_DATASET = os.environ.get("BIGQUERY_DATASET", 'weather_historical_data')
 
 
 def extract_portuguese_stations(parquet_file):
@@ -26,16 +28,25 @@ def extract_portuguese_stations(parquet_file):
             y = x.split("  ", 6)
             if y[0] == 'POW00013201':
                 code.append(y[0])
-                lat.append(y[1])
-                long.append(y[2])
+                lat.append(float(y[1]))
+                l = y[2].split(' ', 2)
+                long.append(float(l[0]))
             elif y[0][:2] == 'PO':
                 code.append(y[0])
-                lat.append(y[1])
-                long.append(y[2])
+                lat.append(float(y[1]))
+                long.append(float(y[2]))
 
     df['code'] = code
     df['lat'] = lat
     df['long'] = long
+
+    df.loc[(df['long']) > -10, 'Region'] = 'Continente'
+    df.loc[df['long'] <= -10, 'Region'] = 'Madeira'
+    df.loc[(df['long']) <= -20, 'Region'] = 'Açores'
+
+    df.loc[((df['Region']) == 'Continente') & (df['lat'] > 38), 'Area'] = 'Centro'
+    df.loc[((df['Region']) == 'Continente') & (df['lat'] > 40), 'Area'] = 'Norte'
+    df.loc[((df['Region']) == 'Continente') & (df['lat'] < 38), 'Area'] = 'Sul'
 
     print(df.head())
 
@@ -120,6 +131,22 @@ with DAG(
         bash_command=f"rm {path_to_local_home}/{dataset_file}"
     )
 
+    bigquery_external_table_task = BigQueryCreateExternalTableOperator(
+        task_id=f"create_external_table_task",
+        table_resource={
+            "tableReference": {
+                "projectId": PROJECT_ID,
+                "datasetId": BIGQUERY_DATASET,
+                "tableId": "weather_stations",
+            },
+            "externalDataConfiguration": {
+                "autodetect": "True",
+                "sourceFormat": f"PARQUET",
+                "sourceUris": [f"gs://{BUCKET}/refined/stations/*"],
+            },
+        },
+    )
+
     trigger_transform_dag = TriggerDagRunOperator(
         task_id=f'trigger_next_dag',
         retries=6,
@@ -127,4 +154,5 @@ with DAG(
     )
 
     download_dataset_task >> local_to_raw_gcs >> process_data_stations
-    process_data_stations >> local_to_refined_gcs >> remove_dataset_task >> trigger_transform_dag
+    process_data_stations >> local_to_refined_gcs >> remove_dataset_task
+    remove_dataset_task >> bigquery_external_table_task >> trigger_transform_dag

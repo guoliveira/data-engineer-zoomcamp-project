@@ -15,6 +15,7 @@ PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
 BUCKET = os.environ.get("GCP_GCS_BUCKET")
 
 path_to_local_home = os.environ.get("AIRFLOW_HOME", "/opt/airflow/")
+BIGQUERY_DATASET = os.environ.get("BIGQUERY_DATASET", 'weather_historical_data')
 
 
 def process_data_weather_fn(year_to_process, local):
@@ -84,8 +85,9 @@ with DAG(
     default_args=default_args,
     catchup=True,
     max_active_runs=1,
-    tags=['dtc-de'],
-    start_date=days_ago(1)
+    tags=['dtc-de','portugal'],
+    start_date=days_ago(1),
+    concurrency=3
 ) as dag:
 
     baseurl="https://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/"
@@ -119,7 +121,7 @@ with DAG(
             bash_command=f"mv {path_to_local_home}/data/{i}/*.snappy.parquet {path_to_local_home}/data/{i}/pt_avg_temp.snappy.parquet"
         )
 
-        local_to_gcs_task = PythonOperator(
+        local_to_refined_gcs = PythonOperator(
             task_id=f"local_to_refined_gcs_year_{i}",
             python_callable=upload_to_gcs,
             op_kwargs={
@@ -129,12 +131,22 @@ with DAG(
             },
         )
 
+        local_to_raw_gcs = PythonOperator(
+            task_id=f"local_to_raw_gcs_year_{i}",
+            python_callable=upload_to_gcs,
+            op_kwargs={
+                "bucket": BUCKET,
+                "object_name": f"raw/weather_data/year={i}/{dataset_file}",
+                "local_file": f"{path_to_local_home}/{dataset_file}",
+            },
+        )
+
         remove_dataset_task = BashOperator(
             task_id=f"remove_dataset_year_{i}",
             bash_command=f"rm {path_to_local_home}/{dataset_file} "
         )
 
-        process_data_weather >> rename_dataset_parquet >> local_to_gcs_task >> remove_dataset_task >> remove_parquet
-
+        process_data_weather >> rename_dataset_parquet >> local_to_refined_gcs >> local_to_raw_gcs
+        local_to_raw_gcs >> remove_dataset_task >> remove_parquet
 
 
