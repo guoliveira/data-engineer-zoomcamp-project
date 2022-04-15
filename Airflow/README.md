@@ -32,7 +32,8 @@
  
 
 At the end of the process I just shut down the container/s:
-    ```shell
+    
+    ```
     docker-compose down
     ```
 
