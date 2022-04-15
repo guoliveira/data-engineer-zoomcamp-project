@@ -27,14 +27,13 @@
 
  5. Run my DAGs on the Web Console.
 
- 7. On finishing your run or to shut down the container/s:
+ 6. In case of need I changed the Python file with the DAG and the changes are applied in the Airflow GUI in seconds.
+
+ 
+
+At the end of the process I just shut down the container/s:
     ```shell
     docker-compose down
-    ```
-
-    To stop and delete containers, delete volumes with database data, and download images, run:
-    ```
-    docker-compose down --volumes --rmi all
     ```
 
 
