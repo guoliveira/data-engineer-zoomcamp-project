@@ -4,9 +4,7 @@ import pandas as pd
 from airflow import DAG
 from airflow.utils.dates import days_ago
 from airflow.operators.bash import BashOperator
-from airflow.operators.dagrun_operator import TriggerDagRunOperator
 from airflow.operators.python import PythonOperator
-from airflow.providers.google.cloud.operators.bigquery import BigQueryCreateExternalTableOperator
 
 from google.cloud import storage
 
@@ -14,10 +12,14 @@ PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
 BUCKET = os.environ.get("GCP_GCS_BUCKET")
 
 path_to_local_home = os.environ.get("AIRFLOW_HOME", "/opt/airflow/")
-BIGQUERY_DATASET = os.environ.get("BIGQUERY_DATASET", 'weather_historical_data')
 
 
 def extract_portuguese_stations(parquet_file):
+    """
+    This function perform transformations at the weather stations
+    :param parquet_file:
+    :return:
+    """
     df = pd.DataFrame()
 
     code = []
@@ -127,32 +129,9 @@ with DAG(
     )
 
     remove_dataset_task = BashOperator(
-        task_id="remove_dataset_task",
+        task_id="remove_dataset_txt",
         bash_command=f"rm {path_to_local_home}/{dataset_file}"
-    )
-
-    bigquery_external_table_task = BigQueryCreateExternalTableOperator(
-        task_id=f"create_external_table_task",
-        table_resource={
-            "tableReference": {
-                "projectId": PROJECT_ID,
-                "datasetId": BIGQUERY_DATASET,
-                "tableId": "weather_stations",
-            },
-            "externalDataConfiguration": {
-                "autodetect": "True",
-                "sourceFormat": f"PARQUET",
-                "sourceUris": [f"gs://{BUCKET}/refined/stations/*"],
-            },
-        },
-    )
-
-    trigger_transform_dag = TriggerDagRunOperator(
-        task_id=f'trigger_next_dag',
-        retries=6,
-        trigger_dag_id="ingest_process_weather_data",
     )
 
     download_dataset_task >> local_to_raw_gcs >> process_data_stations
     process_data_stations >> local_to_refined_gcs >> remove_dataset_task
-    remove_dataset_task >> bigquery_external_table_task >> trigger_transform_dag
