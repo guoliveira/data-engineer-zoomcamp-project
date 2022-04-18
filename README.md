@@ -63,6 +63,6 @@ The DDL queries are presented here.
 
 8. Development of some "questions to the data" in order to perform an analyses.
 
-9. Development of a visualization using ...
+9. Development of a visualization using ... https://datastudio.google.com/reporting/a11df294-07aa-47ef-beb5-1438f26a3283
 
 
