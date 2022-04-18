@@ -4,7 +4,7 @@ import pyspark
 from pyspark.sql import SparkSession
 
 from airflow import DAG
-from airflow.utils.dates import days_ago
+from datetime import datetime
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 from airflow.operators.dummy import DummyOperator
@@ -83,65 +83,65 @@ with DAG(
     schedule_interval=None,
     default_args=default_args,
     catchup=True,
-    max_active_runs=1,
-    tags=['dtc-de','portugal'],
-    start_date=days_ago(1),
+    max_active_runs=2,
+    tags=['dtc-de', 'portugal'],
+    start_date=datetime(2001, 1, 1),
     concurrency=3
 ) as dag:
 
-    baseurl="https://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/"
+    baseurl = "https://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/"
+
+    cY = '{{ execution_date.strftime(\'%Y\') }}'
+    i = int(cY)-1
 
     start_task = DummyOperator(task_id='start_task', dag=dag)
 
-    for i in range(2000, 2021):
-        dataset_file = f"{i}.csv.gz"
+    dataset_file = f"{i}.csv.gz"
 
-        download_dataset_task = BashOperator(
-            task_id=f"download_dataset_{i}",
-            bash_command=f"curl -sSLf {baseurl}{dataset_file} > {path_to_local_home}/{dataset_file}"
-        )
+    download_dataset_task = BashOperator(
+        task_id=f"download_dataset_{i}",
+        bash_command=f"curl -sSLf {baseurl}{dataset_file} > {path_to_local_home}/{dataset_file}"
+    )
 
-        process_data_weather = PythonOperator(
-            task_id=f'process_data_weather_{i}',
-            python_callable = process_data_weather_fn,
-            op_kwargs={
-                "year_to_process": i,
-                "local": path_to_local_home}
-        )
+    process_data_weather = PythonOperator(
+        task_id=f'process_data_weather_{i}',
+        python_callable=process_data_weather_fn,
+        op_kwargs={
+            "year_to_process": i,
+            "local": path_to_local_home}
+    )
 
-        start_task >> download_dataset_task >> process_data_weather
+    rename_dataset_parquet = BashOperator(
+        task_id=f"rename_parquet_{i}",
+        bash_command=f"mv {path_to_local_home}/data/{i}/*.snappy.parquet {path_to_local_home}/data/{i}/pt_avg_temp.snappy.parquet"
+    )
 
-        rename_dataset_parquet = BashOperator(
-            task_id=f"rename_parquet_{i}",
-            bash_command=f"mv {path_to_local_home}/data/{i}/*.snappy.parquet {path_to_local_home}/data/{i}/pt_avg_temp.snappy.parquet"
-        )
+    local_to_refined_gcs = PythonOperator(
+        task_id=f"local_to_refined_gcs_year_{i}",
+        python_callable=upload_to_gcs,
+        op_kwargs={
+            "bucket": BUCKET,
+            "object_name": f"refined/weather_data/year={i}/pt_avg_temp.snappy.parquet",
+            "local_file": f"{path_to_local_home}/data/{i}/pt_avg_temp.snappy.parquet",
+        },
+    )
 
-        local_to_refined_gcs = PythonOperator(
-            task_id=f"local_to_refined_gcs_year_{i}",
-            python_callable=upload_to_gcs,
-            op_kwargs={
-                "bucket": BUCKET,
-                "object_name": f"refined/weather_data/year={i}/pt_avg_temp.snappy.parquet",
-                "local_file": f"{path_to_local_home}/data/{i}/pt_avg_temp.snappy.parquet",
-            },
-        )
+    local_to_raw_gcs = PythonOperator(
+        task_id=f"local_to_raw_gcs_year_{i}",
+        python_callable=upload_to_gcs,
+        op_kwargs={
+            "bucket": BUCKET,
+            "object_name": f"raw/weather_data/year={i}/{dataset_file}",
+            "local_file": f"{path_to_local_home}/{dataset_file}",
+        },
+    )
 
-        local_to_raw_gcs = PythonOperator(
-            task_id=f"local_to_raw_gcs_year_{i}",
-            python_callable=upload_to_gcs,
-            op_kwargs={
-                "bucket": BUCKET,
-                "object_name": f"raw/weather_data/year={i}/{dataset_file}",
-                "local_file": f"{path_to_local_home}/{dataset_file}",
-            },
-        )
+    remove_dataset_task = BashOperator(
+        task_id=f"remove_dataset_year_{i}",
+        bash_command=f"rm {path_to_local_home}/{dataset_file} {path_to_local_home}/data/{i}/pt_avg_temp.snappy.parquet"
+    )
 
-        remove_dataset_task = BashOperator(
-            task_id=f"remove_dataset_year_{i}",
-            bash_command=f"rm {path_to_local_home}/{dataset_file} {path_to_local_home}/data/{i}/pt_avg_temp.snappy.parquet"
-        )
-
-        process_data_weather >> rename_dataset_parquet >> local_to_refined_gcs >> local_to_raw_gcs
-        local_to_raw_gcs >> remove_dataset_task
+    start_task >> process_data_weather >> rename_dataset_parquet >> local_to_refined_gcs >> local_to_raw_gcs
+    local_to_raw_gcs >> remove_dataset_task
 
 
