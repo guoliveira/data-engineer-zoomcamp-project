@@ -1,4 +1,4 @@
-#Data pipeline 🪠
+# Data pipeline 🤖
 
 The main goal of my pipeline was to extract data from NOAA dataset into GCP Storage in the raw format and refined format (after transformation)
 
