@@ -18,9 +18,12 @@ The zoomcamp is completed with a personal [Project](https://github.com/DataTalks
 For my project I decided to analyse the historical temperature in Portugal in the last 20 years. 
 More specifically, I decided to analyse the average temperature from 2000 to 2020. (It was decided to avoid 2021 due possible mistakes and 2022 since it is incomplete).
 
-**With this project I intend to see if there were any temperature trend over the last 20 years**
+**With this project I intend to see if there were any temperature trend over the last 20 years in Portugal**
 
 In terms of dataset I had many choices, but I decided to use the [NOAA dataset](https://registry.opendata.aws/noaa-ghcn/) available in the AWS Open Data.
+
+![Portugal](https://user-images.githubusercontent.com/12693788/163829678-57d52284-55bb-40f1-bbbf-b7df41b80cc0.png)
+
 
 This dataset has the following description:
 
