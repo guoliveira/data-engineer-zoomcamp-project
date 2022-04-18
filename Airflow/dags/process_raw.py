@@ -8,6 +8,7 @@ from datetime import datetime
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 from airflow.operators.dummy import DummyOperator
+from dateutil. relativedelta import relativedelta
 
 from google.cloud import storage
 
@@ -80,31 +81,31 @@ default_args = {
 # NOTE: DAG declaration - using a Context Manager (an implicit way)
 with DAG(
     dag_id="ingest_process_weather_data",
-    schedule_interval=None,
+    schedule_interval='@yearly',
     default_args=default_args,
     catchup=True,
     max_active_runs=2,
     tags=['dtc-de', 'portugal'],
-    start_date=datetime(2001, 1, 1),
+    start_date=datetime(2000, 1, 1),
+    end_date=datetime(2020, 1, 1),
     concurrency=3
 ) as dag:
 
     baseurl = "https://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/"
 
-    cY = '{{ execution_date.strftime(\'%Y\') }}'
-    i = int(cY)-1
+    i = "{{ execution_date.strftime('%Y') }}"
 
     start_task = DummyOperator(task_id='start_task', dag=dag)
 
     dataset_file = f"{i}.csv.gz"
 
     download_dataset_task = BashOperator(
-        task_id=f"download_dataset_{i}",
+        task_id=f"download_dataset",
         bash_command=f"curl -sSLf {baseurl}{dataset_file} > {path_to_local_home}/{dataset_file}"
     )
 
     process_data_weather = PythonOperator(
-        task_id=f'process_data_weather_{i}',
+        task_id=f'process_data_weather',
         python_callable=process_data_weather_fn,
         op_kwargs={
             "year_to_process": i,
@@ -112,12 +113,12 @@ with DAG(
     )
 
     rename_dataset_parquet = BashOperator(
-        task_id=f"rename_parquet_{i}",
+        task_id=f"rename_parquet",
         bash_command=f"mv {path_to_local_home}/data/{i}/*.snappy.parquet {path_to_local_home}/data/{i}/pt_avg_temp.snappy.parquet"
     )
 
     local_to_refined_gcs = PythonOperator(
-        task_id=f"local_to_refined_gcs_year_{i}",
+        task_id=f"local_to_refined_gcs_year",
         python_callable=upload_to_gcs,
         op_kwargs={
             "bucket": BUCKET,
@@ -127,7 +128,7 @@ with DAG(
     )
 
     local_to_raw_gcs = PythonOperator(
-        task_id=f"local_to_raw_gcs_year_{i}",
+        task_id=f"local_to_raw_gcs_year",
         python_callable=upload_to_gcs,
         op_kwargs={
             "bucket": BUCKET,
@@ -137,11 +138,11 @@ with DAG(
     )
 
     remove_dataset_task = BashOperator(
-        task_id=f"remove_dataset_year_{i}",
+        task_id=f"remove_dataset_year",
         bash_command=f"rm {path_to_local_home}/{dataset_file} {path_to_local_home}/data/{i}/pt_avg_temp.snappy.parquet"
     )
 
-    start_task >> process_data_weather >> rename_dataset_parquet >> local_to_refined_gcs >> local_to_raw_gcs
-    local_to_raw_gcs >> remove_dataset_task
+    start_task >> download_dataset_task >> process_data_weather >> rename_dataset_parquet >> local_to_refined_gcs
+    local_to_refined_gcs >> local_to_raw_gcs >> remove_dataset_task
 
 
