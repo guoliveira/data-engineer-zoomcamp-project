@@ -54,7 +54,9 @@ This capstone followed these general development steps:
 6. Ran the two Dags in order get the raw files and refined (after transformation) files in GCP Storage. [The data pipeline is presented here.](pipeline.md)
 
 7. Creation of two tables in BigQuery using DDL. One table with Portuguese weather station information (code, latitude, longitude, region and location) and one partitioned table with the average temperature by day and by station (this table was partition by year).
-***It was decided to run a DDL Query in BigQuery because it was going to be done once (it was unnecessary to set it in Airflow)***
+8. 
+***It was decided to run a DDL Query in BigQuery because it was going to be done only once (it was an unnecessary energy to set it in Airflow)***
+
 The DDL queries are presented here.
 
 8. Development of some "questions to the data" in order to perform an analyses.
