@@ -16,6 +16,9 @@ Hence, the tasks developed are:
 3. Transform the txt file into a parquet file using the following rules:
 * Extract attributes code, lat an long
 * Filter by stations with code starting PO (Portugal)
+* According with the latitude and longitude it was created two columns one to say if it was Portugues Mainland ("Continente") or one of the Islands ("Madeira" or "Açores") and another column indicating the area of the Mainland - North, Center or South ("Norte", "Centro" and "Sul").
+* Performed one small correction on one weather station;
+* Convert
 
 
 
