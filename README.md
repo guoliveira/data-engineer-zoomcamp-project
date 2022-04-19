@@ -18,7 +18,7 @@ The zoomcamp is completed with a personal [Project](https://github.com/DataTalks
 For my project I decided to analyse the historical temperature in Portugal in the last 20 years. 
 More specifically, I decided to analyse the average temperature from 2000 to 2020. (It was decided to avoid 2021 due possible mistakes and 2022 since it is incomplete).
 
-**With this project I intend to see if there were any temperature trend over the last 20 years in Portugal**
+**With this project I intend to analyse the Portuguese average temperature over the last 20 years in Portugal**
 
 ![Portugal](https://user-images.githubusercontent.com/12693788/163829678-57d52284-55bb-40f1-bbbf-b7df41b80cc0.png)
 
@@ -63,6 +63,6 @@ The DDL queries are presented here.
 
 8. Development of some "questions to the data" in order to perform an analyses.
 
-9. Development of a visualization using ... https://datastudio.google.com/reporting/a11df294-07aa-47ef-beb5-1438f26a3283
+9. Development of a visualization using [Datastudio](https://datastudio.google.com). ... https://datastudio.google.com/reporting/a11df294-07aa-47ef-beb5-1438f26a3283
 
 
