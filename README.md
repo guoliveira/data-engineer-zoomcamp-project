@@ -59,7 +59,7 @@ This capstone followed these general development steps:
 
 ***It was decided to run a DDL Query in BigQuery because it was going to be done only once (it was an unnecessary energy to set it in Airflow)***
 
-The DDL queries are presented here.
+[The DDL queries are presented here.](SQL/create_tables.sql)
 
 8. Development of some "questions to the data" in order to perform an analyses.
 
