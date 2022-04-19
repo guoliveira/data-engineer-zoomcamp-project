@@ -36,7 +36,8 @@ For this project it was decided to use the following tools:
 - Terraform - As a Infrastructure-as-Code (IaC) tool;
 - Google Cloud Storage (GCS) - for storage as Data Lake;
 - BigQuery: for the project Data Warehouse;
-- Spark: for the transformation of raw data in refined data.
+- Spark: for the transformation of raw data in refined data;
+- Google Data studio for visualizations.
 
 
 ## Development Steps 🚧
@@ -49,7 +50,7 @@ This capstone followed these general development steps:
 
 3. Creation of a GCP infrastructure using Terraform. This infrastructure includes Big Query and Storage.  [The steps can be seen here](https://github.com/guoliveira/data-engineer-zoomcamp-project/blob/main/GCP_Terraform/Readme.md#creation-of-a-gcp-infrastructure);
 
-4. [Development of DockerFile and Docker-Compose structure to run Airflow.](setup_docker.md)
+4. [Development of DockerFile and Docker-Compose structure to run Airflow.](GCP_Terraform/setup_docker.md)
 
 5. [Start to run Airflow inside a container](Airflow/README.md) and [development of two DAG for the pipeline data.](Airflow/dags)
 
@@ -61,6 +62,8 @@ This capstone followed these general development steps:
 
 8. Development of some "questions to the data" in order to perform an analyses.
 
-9. Development of a visualization using [Datastudio](https://datastudio.google.com). ... https://datastudio.google.com/reporting/a11df294-07aa-47ef-beb5-1438f26a3283
+9. Development of a visualization using [Datastudio](https://datastudio.google.com). To obtain a better visualization it was created this view being used for Datastudio. The developed charts are present [in this link](https://datastudio.google.com/u/1/reporting/a11df294-07aa-47ef-beb5-1438f26a3283/page/oSmqC)
 
+Thank you for you attention.
+😉
 
