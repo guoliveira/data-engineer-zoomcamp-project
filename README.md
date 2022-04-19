@@ -62,7 +62,7 @@ This capstone followed these general development steps:
 
 8. Development of some "questions to the data" in order to perform an analyses.
 
-9. Development of a visualization using [Datastudio](https://datastudio.google.com). To obtain a better visualization it was created this view being used for Datastudio. The developed charts are present [in this link](https://datastudio.google.com/u/1/reporting/a11df294-07aa-47ef-beb5-1438f26a3283/page/oSmqC)
+9. Development of a visualization using [Datastudio](https://datastudio.google.com). To obtain a better visualization it was created [this view](SQL/create_view_visio.sql) being used for Datastudio. The developed charts are present [in this link](https://datastudio.google.com/u/1/reporting/a11df294-07aa-47ef-beb5-1438f26a3283/page/oSmqC)
 
 Thank you for you attention.
 😉
