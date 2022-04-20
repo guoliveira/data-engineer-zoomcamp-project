@@ -10,7 +10,7 @@ The above zoomcamp had the following main topics/tools:
 - Airflow;
 - Data Warehouse with Big Query;
 - Analytics Engineering with Data Build Tool (DBT);
-- Batch streaming with Spark;
+- Batch with Spark;
 - Streaming with Kafka.
 
 The zoomcamp is completed with a personal [Project](https://github.com/DataTalksClub/data-engineering-zoomcamp/tree/main/week_7_project) envolving some of those tools/topics.
@@ -30,7 +30,7 @@ This dataset has the following description:
 
 ## Used Technologies 🔨
 
-For this project it was decided to use the following tools:
+For this project I decided to use the following tools:
 - Docker - to proceed to the containerization of other technologies;
 - Airflow - for the orchestration of the full pipeline;
 - Terraform - As a Infrastructure-as-Code (IaC) tool;
